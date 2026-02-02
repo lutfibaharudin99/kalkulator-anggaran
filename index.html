@@ -3,110 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Tamu Undangan Pernikahan</title>
+    <title>Kalkulator Anggaran Pernikahan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            background-color: #f0f4f8;
-            font-family: 'Inter', sans-serif;
+            background-color: #fdf2f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .card {
             background: white;
             border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .item-row:hover .delete-btn {
+            opacity: 1;
         }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-indigo-700 mb-2">💌 Guest List Manager</h1>
-            <p class="text-gray-600">Kelola daftar tamu undangan pernikahan Anda dengan mudah.</p>
+            <h1 class="text-3xl font-bold text-pink-600 mb-2">💍 Wedding Budget Planner</h1>
+            <p class="text-gray-600">Rencanakan anggaran dengan detail harga satuan dan jumlah tamu.</p>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Statistik Section -->
-            <div class="md:col-span-1 space-y-4">
-                <div class="card p-6 border-t-4 border-indigo-500">
-                    <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Ringkasan Tamu</h2>
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Total Undangan</span>
-                            <span id="total-guests" class="text-xl font-bold text-indigo-600">0</span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Summary Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <div class="card p-6 text-center sticky top-8">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-2">Total Estimasi</h2>
+                    <p id="total-display" class="text-3xl font-bold text-pink-600">Rp 0</p>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <label class="block text-sm text-gray-500 mb-1 text-left">Target Anggaran (Limit)</label>
+                        <div class="flex items-center bg-gray-50 rounded-lg px-3 py-2">
+                            <span class="text-gray-400 mr-2">Rp</span>
+                            <input type="number" id="target-budget" placeholder="0" 
+                                   class="bg-transparent w-full outline-none font-semibold text-gray-700">
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Pria (L)</span>
-                            <span id="total-male" class="text-lg font-semibold text-blue-500">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-gray-600">Wanita (P)</span>
-                            <span id="total-female" class="text-lg font-semibold text-pink-500">0</span>
-                        </div>
+                        <div id="budget-status" class="mt-2 text-xs font-medium uppercase hidden"></div>
                     </div>
-                    <button onclick="exportToCSV()" class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 rounded-lg transition-all flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        Ekspor ke CSV
-                    </button>
-                </div>
 
-                <div class="card p-6">
-                    <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Input Tamu Baru</h2>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-400 mb-1">NAMA LENGKAP</label>
-                            <input type="text" id="guest-name" placeholder="Masukkan nama..." 
-                                   class="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-300 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-400 mb-2">JENIS KELAMIN</label>
-                            <div class="flex gap-2">
-                                <button onclick="setGender('L')" id="btn-male" 
-                                        class="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">Pria (L)</button>
-                                <button onclick="setGender('P')" id="btn-female" 
-                                        class="flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-pink-50 transition-colors">Wanita (P)</button>
-                            </div>
-                        </div>
-                        <button onclick="addGuest()" 
-                                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg shadow-md transition-all mt-2">
-                            Tambah ke Daftar
-                        </button>
+                    <div class="mt-6">
+                        <h2 class="text-sm font-semibold text-gray-500 mb-4 text-left">Distribusi Biaya</h2>
+                        <canvas id="budgetChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- List Section -->
-            <div class="md:col-span-2">
-                <div class="card p-6 min-h-[400px]">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold text-gray-800">Daftar Nama</h2>
-                        <div class="relative">
-                            <input type="text" id="search-guest" oninput="filterGuests()" placeholder="Cari nama..." 
-                                   class="pl-8 pr-3 py-1 border rounded-full text-sm focus:ring-2 focus:ring-indigo-300 outline-none">
-                            <svg class="w-4 h-4 text-gray-400 absolute left-2.5 top-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <!-- Main Input Area -->
+            <div class="lg:col-span-2">
+                <div class="card p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Rincian Biaya</h2>
+                        <button onclick="addItem()" class="bg-pink-500 hover:bg-pink-600 text-white px-5 py-2 rounded-full font-medium transition-all shadow-md flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                             </svg>
-                        </div>
+                            Tambah Item
+                        </button>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50 border-b">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">No</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Nama</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Gender</th>
-                                    <th class="px-4 py-3 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="guest-list-body" class="divide-y divide-gray-100">
-                                <!-- Guests will appear here -->
-                            </tbody>
-                        </table>
-                        <div id="empty-state" class="text-center py-10 hidden">
-                            <p class="text-gray-400">Belum ada tamu di daftar.</p>
-                        </div>
+                    <!-- Table Header -->
+                    <div class="hidden sm:grid grid-cols-12 gap-2 px-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <div class="col-span-5">Nama Item</div>
+                        <div class="col-span-3 text-right">Harga Satuan</div>
+                        <div class="col-span-1 text-center">Qty</div>
+                        <div class="col-span-3 text-right">Subtotal</div>
+                    </div>
+
+                    <div id="items-container" class="space-y-3">
+                        <!-- Items will be injected here -->
+                    </div>
+
+                    <div class="mt-10 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <button onclick="resetData()" class="text-gray-400 hover:text-red-500 text-sm flex items-center gap-1 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Hapus Semua Data
+                        </button>
+                        <button onclick="saveToLocal()" class="bg-green-600 hover:bg-green-700 text-white px-8 py-2.5 rounded-lg font-bold transition-all shadow-lg">
+                            Simpan Perubahan
+                        </button>
                     </div>
                 </div>
             </div>
@@ -114,148 +99,222 @@
     </div>
 
     <script>
-        let guests = [];
-        let selectedGender = null;
+        // State
+        let budgetItems = [
+            { id: 1, name: 'Katering (Prasmanan)', price: 45000, qty: 500 },
+            { id: 2, name: 'Snack Box', price: 15000, qty: 200 },
+            { id: 3, name: 'Sewa Gedung', price: 15000000, qty: 1 },
+            { id: 4, name: 'Dekorasi Pelaminan', price: 7500000, qty: 1 }
+        ];
 
-        // Load data from localStorage on load
+        let myChart;
+
         function init() {
-            const savedGuests = localStorage.getItem('wedding_guests_data');
-            if (savedGuests) {
-                try {
-                    guests = JSON.parse(savedGuests);
-                } catch (e) {
-                    console.error("Gagal memuat data", e);
-                    guests = [];
-                }
-            }
-            renderGuests();
-        }
-
-        function setGender(g) {
-            selectedGender = g;
-            const btnM = document.getElementById('btn-male');
-            const btnF = document.getElementById('btn-female');
+            const savedData = localStorage.getItem('wedding_budget_v2');
+            const savedTarget = localStorage.getItem('wedding_target_v2');
             
-            if (g === 'L') {
-                btnM.className = 'flex-1 py-2 border border-blue-500 bg-blue-500 text-white rounded-lg text-sm font-medium transition-all';
-                btnF.className = 'flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-pink-50 transition-all';
-            } else {
-                btnF.className = 'flex-1 py-2 border border-pink-500 bg-pink-500 text-white rounded-lg text-sm font-medium transition-all';
-                btnM.className = 'flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-blue-50 transition-all';
+            if (savedData) {
+                budgetItems = JSON.parse(savedData);
             }
-        }
-
-        function addGuest() {
-            const nameInput = document.getElementById('guest-name');
-            const name = nameInput.value.trim();
-
-            if (!name) return alert('Nama harus diisi!');
-            if (!selectedGender) return alert('Pilih jenis kelamin!');
-
-            const newGuest = {
-                id: Date.now(),
-                name: name,
-                gender: selectedGender
-            };
-
-            guests.push(newGuest);
-            saveData(); // Simpan ke local storage segera
-
-            nameInput.value = '';
-            selectedGender = null;
-            resetButtons();
-            renderGuests();
-        }
-
-        function resetButtons() {
-            document.getElementById('btn-male').className = 'flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-blue-50';
-            document.getElementById('btn-female').className = 'flex-1 py-2 border rounded-lg text-sm font-medium hover:bg-pink-50';
-        }
-
-        function deleteGuest(id) {
-            if (confirm('Hapus tamu ini dari daftar?')) {
-                guests = guests.filter(g => g.id !== id);
-                saveData();
-                renderGuests();
+            if (savedTarget) {
+                document.getElementById('target-budget').value = savedTarget;
             }
+            
+            renderItems();
+            initChart();
+            updateTotal();
         }
 
-        function renderGuests(filterText = '') {
-            const tbody = document.getElementById('guest-list-body');
-            const emptyState = document.getElementById('empty-state');
-            tbody.innerHTML = '';
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
+            }).format(number);
+        }
 
-            const filtered = guests.filter(g => g.name.toLowerCase().includes(filterText.toLowerCase()));
+        // Render total list, call only on add/remove or first load
+        function renderItems() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
 
-            if (filtered.length === 0) {
-                emptyState.classList.remove('hidden');
-            } else {
-                emptyState.classList.add('hidden');
-                filtered.forEach((guest, index) => {
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-50 transition-colors';
-                    row.innerHTML = `
-                        <td class="px-4 py-3 text-sm text-gray-500">${index + 1}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-gray-700">${guest.name}</td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase ${guest.gender === 'L' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'}">
-                                ${guest.gender === 'L' ? 'Pria' : 'Wanita'}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                            <button onclick="deleteGuest(${guest.id})" class="text-gray-300 hover:text-red-500 transition-colors">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            budgetItems.forEach((item, index) => {
+                const subtotal = item.price * item.qty;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item-row grid grid-cols-1 sm:grid-cols-12 gap-3 p-4 bg-gray-50 rounded-xl border border-transparent hover:border-pink-200 hover:bg-white transition-all items-center relative';
+                itemDiv.innerHTML = `
+                    <div class="col-span-1 sm:col-span-5">
+                        <label class="block sm:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Nama Item</label>
+                        <input type="text" value="${item.name}" 
+                               oninput="updateItemField(${index}, 'name', this.value)"
+                               class="bg-transparent font-semibold text-gray-700 w-full outline-none focus:text-pink-600" placeholder="Contoh: Snack">
+                    </div>
+                    <div class="col-span-1 sm:col-span-3">
+                        <label class="block sm:hidden text-[10px] font-bold text-gray-400 uppercase mb-1 text-right">Harga Satuan</label>
+                        <div class="flex items-center justify-end">
+                            <span class="text-xs text-gray-400 mr-1">Rp</span>
+                            <input type="number" value="${item.price}" 
+                                   oninput="updateItemField(${index}, 'price', this.value)"
+                                   class="w-full text-right bg-transparent outline-none text-gray-600 font-medium" placeholder="0">
+                        </div>
+                    </div>
+                    <div class="col-span-1 sm:col-span-1">
+                        <label class="block sm:hidden text-[10px] font-bold text-gray-400 uppercase mb-1 text-center">Qty</label>
+                        <input type="number" value="${item.qty}" 
+                               oninput="updateItemField(${index}, 'qty', this.value)"
+                               class="w-full text-center bg-gray-200/50 rounded-md py-1 outline-none font-bold text-pink-600" placeholder="1">
+                    </div>
+                    <div class="col-span-1 sm:col-span-3 text-right">
+                        <label class="block sm:hidden text-[10px] font-bold text-gray-400 uppercase mb-1">Subtotal</label>
+                        <div class="flex items-center justify-end gap-2">
+                            <span id="subtotal-${index}" class="font-bold text-gray-800">${formatRupiah(subtotal)}</span>
+                            <button onclick="removeItem(${index})" class="delete-btn opacity-100 sm:opacity-0 text-red-400 hover:text-red-600 transition-all p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                                 </svg>
                             </button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-
-            updateStats();
-        }
-
-        function filterGuests() {
-            const text = document.getElementById('search-guest').value;
-            renderGuests(text);
-        }
-
-        function updateStats() {
-            const maleCount = guests.filter(g => g.gender === 'L').length;
-            const femaleCount = guests.filter(g => g.gender === 'P').length;
-            
-            document.getElementById('total-guests').innerText = guests.length;
-            document.getElementById('total-male').innerText = maleCount;
-            document.getElementById('total-female').innerText = femaleCount;
-        }
-
-        function saveData() {
-            localStorage.setItem('wedding_guests_data', JSON.stringify(guests));
-        }
-
-        function exportToCSV() {
-            if (guests.length === 0) return alert('Daftar masih kosong!');
-
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "No,Nama Lengkap,Jenis Kelamin\n";
-
-            guests.forEach((g, index) => {
-                const genderLabel = g.gender === 'L' ? "Pria" : "Wanita";
-                csvContent += `${index + 1},"${g.name}",${genderLabel}\n`;
+                        </div>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
             });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "daftar_tamu_pernikahan.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
-        // Jalankan aplikasi
+        // Optimized update: only update data and specific DOM elements
+        function updateItemField(index, field, val) {
+            if (field === 'name') {
+                budgetItems[index].name = val;
+            } else {
+                budgetItems[index][field] = parseFloat(val) || 0;
+                
+                // Update only the subtotal display for this row
+                const subtotalEl = document.getElementById(`subtotal-${index}`);
+                if (subtotalEl) {
+                    const newSubtotal = budgetItems[index].price * budgetItems[index].qty;
+                    subtotalEl.innerText = formatRupiah(newSubtotal);
+                }
+            }
+            updateTotal();
+            updateChart();
+        }
+
+        function addItem() {
+            const newItem = {
+                id: Date.now(),
+                name: '',
+                price: 0,
+                qty: 1
+            };
+            budgetItems.push(newItem);
+            renderItems();
+            updateTotal();
+            updateChart();
+        }
+
+        function removeItem(index) {
+            budgetItems.splice(index, 1);
+            renderItems();
+            updateTotal();
+            updateChart();
+        }
+
+        function updateTotal() {
+            const total = budgetItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            document.getElementById('total-display').innerText = formatRupiah(total);
+            
+            const target = parseFloat(document.getElementById('target-budget').value) || 0;
+            const display = document.getElementById('total-display');
+            const status = document.getElementById('budget-status');
+            
+            if (target > 0) {
+                status.classList.remove('hidden');
+                if (total > target) {
+                    display.className = 'text-3xl font-bold text-red-600';
+                    status.innerText = 'Over Budget! (Melebihi Target)';
+                    status.className = 'mt-2 text-xs font-bold uppercase text-red-500';
+                } else {
+                    display.className = 'text-3xl font-bold text-green-600';
+                    status.innerText = 'Aman (Di Bawah Target)';
+                    status.className = 'mt-2 text-xs font-bold uppercase text-green-500';
+                }
+            } else {
+                display.className = 'text-3xl font-bold text-pink-600';
+                status.classList.add('hidden');
+            }
+        }
+
+        function saveToLocal() {
+            localStorage.setItem('wedding_budget_v2', JSON.stringify(budgetItems));
+            localStorage.setItem('wedding_target_v2', document.getElementById('target-budget').value);
+            showToast('Anggaran berhasil disimpan!');
+        }
+
+        function resetData() {
+            if (confirm('Hapus semua data anggaran?')) {
+                localStorage.removeItem('wedding_budget_v2');
+                localStorage.removeItem('wedding_target_v2');
+                location.reload();
+            }
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: budgetItems.map(i => i.name || 'Tanpa Nama'),
+                    datasets: [{
+                        data: budgetItems.map(i => i.price * i.qty),
+                        backgroundColor: [
+                            '#ec4899', '#f472b6', '#fbcfe8', '#db2777', 
+                            '#9d174d', '#be185d', '#f9a8d4', '#fda4af', '#f43f5e'
+                        ],
+                        hoverOffset: 4,
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: { duration: 0 }, // Disable animation to make typing feel faster
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + formatRupiah(context.raw);
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        function updateChart() {
+            if (myChart) {
+                myChart.data.labels = budgetItems.map(i => i.name || 'Tanpa Nama');
+                myChart.data.datasets[0].data = budgetItems.map(i => i.price * i.qty);
+                myChart.update('none'); // Update without animation for performance
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-2xl text-sm z-50 transition-all';
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 3000);
+        }
+
+        document.getElementById('target-budget').addEventListener('input', () => {
+            updateTotal();
+        });
+
         init();
     </script>
 </body>
